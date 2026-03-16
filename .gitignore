@@ -1,0 +1,23 @@
+# Lightroom Plugin specific
+*.lrprev
+*.lrdata
+*.lrcat
+*.lrcat-journal
+*.lock
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+venv/
+ENV/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Plugin temp files
+temp/
+AddaxTemp_*/
+results.json
