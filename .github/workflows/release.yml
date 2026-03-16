@@ -1,0 +1,57 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v0.1.0)'
+        required: true
+        default: 'v0.1.0'
+
+jobs:
+  build:
+    name: Create Plugin Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set Version Variable
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: Prepare Plugin Folder
+        run: |
+          mkdir -p lr-addax-ai.lrplugin
+          cp *.lua README.md LICENSE .gitignore lr-addax-ai.lrplugin/
+          cp -r scripts lr-addax-ai.lrplugin/
+          
+      - name: Zip Plugin
+        run: |
+          zip -r lr-addax-ai-${{ env.RELEASE_VERSION }}.zip lr-addax-ai.lrplugin
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: lr-addax-ai-${{ env.RELEASE_VERSION }}.zip
+          name: Release ${{ env.RELEASE_VERSION }}
+          tag_name: ${{ env.RELEASE_VERSION }}
+          body: |
+            Addax-AI Lightroom Classifier Release ${{ env.RELEASE_VERSION }}
+            
+            ### Installation:
+            1. Download the `lr-addax-ai-${{ env.RELEASE_VERSION }}.zip` file below.
+            2. Unzip the file.
+            3. In Lightroom Classic, go to `File > Plug-in Manager`.
+            4. Click `Add` and select the `lr-addax-ai.lrplugin` folder.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
